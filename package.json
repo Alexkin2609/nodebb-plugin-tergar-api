@@ -1,6 +1,6 @@
 {
   "name": "nodebb-plugin-tergar-api",
-  "version": "1.0.4",
+  "version": "1.0.3",
   "description": "A plugin for NodeBB that allows to enable some specific API endpoinds for Tergar.",
   "main": "library.js",
   "scripts": {
