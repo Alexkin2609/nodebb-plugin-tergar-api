@@ -25,6 +25,23 @@ module.exports = function(/*middleware*/) {
 		});
 	});
 
+	app.route('/:email')
+		.get(apiMiddleware.requireUser, apiMiddleware.exposeAdmin, function(req, res) {
+			if (!res.locals.isAdmin) {
+				return errorHandler.respond(401, res);
+			}
+
+			Users.getUidByEmail(req.params.email, function (err, uid) {
+				if (err) {
+					return errorHandler.respond(401, res);
+				}
+
+				return errorHandler.handle(err, res, {
+					uid: uid
+				});
+			});
+		});
+
 	app.route('/:uid')
 		.put(apiMiddleware.requireUser, apiMiddleware.exposeAdmin, function(req, res) {
 			if (parseInt(req.params.uid, 10) !== parseInt(req.user.uid, 10) && !res.locals.isAdmin) {
@@ -71,7 +88,7 @@ module.exports = function(/*middleware*/) {
 		});
 	});
 
-	app.post('/:uid/follow', apiMiddleware.requireUser, function(req, res) {
+	app.put('/:uid/follow', apiMiddleware.requireUser, function(req, res) {
 		Users.follow(req.user.uid, req.params.uid, function(err) {
 			return errorHandler.handle(err, res);
 		});
@@ -91,26 +108,43 @@ module.exports = function(/*middleware*/) {
 
 			var timestamp = parseInt(req.body.timestamp, 10) || Date.now();
 
+			function addMessage(roomId) {
+				Messaging.addMessage({
+					uid: req.user.uid,
+					roomId: roomId,
+					content: req.body.message,
+					timestamp: timestamp,
+				}, function(err, message) {
+					if (parseInt(req.body.quiet, 10) !== 1) {
+						Messaging.notifyUsersInRoom(req.user.uid, roomId, message);
+					}
+
+					return errorHandler.handle(err, res, message);
+				});
+			}
+
 			Messaging.canMessageUser(req.user.uid, req.params.uid, function(err) {
 				if (err) {
 					return errorHandler.handle(err, res);
 				}
 
-				Messaging.newRoom(req.user.uid, [req.params.uid], function(err, roomId) {
-					Messaging.addMessage(req.user.uid, roomId, req.body.message, timestamp, function(err, message) {
-						if (parseInt(req.body.quiet, 10) !== 1 && !timestamp) {
-							Messaging.notifyUsersInRoom(req.user.uid, roomId, message);
+				if (req.body.roomId) {
+					addMessage(req.body.roomId);
+				} else {
+					Messaging.newRoom(req.user.uid, [req.params.uid], function(err, roomId) {
+						if (err) {
+							return errorHandler.handle(err, res);
 						}
 
-						return errorHandler.handle(err, res, message);
+						addMessage(roomId);
 					});
-				});
+				}
 			});
 		});
 
 	app.route('/:uid/ban')
-		.post(apiMiddleware.requireUser, apiMiddleware.requireAdmin, function(req, res) {
-			Users.bans.ban(req.params.uid, function(err) {
+		.put(apiMiddleware.requireUser, apiMiddleware.requireAdmin, function(req, res) {
+			Users.bans.ban(req.params.uid, req.body.until || 0, req.body.reason || '', function(err) {
 				errorHandler.handle(err, res);
 			});
 		})
