@@ -2,7 +2,7 @@
 	'use strict';
 	/* globals module */
 
-	var async = module.parent.parent.require('async'),
+	var async = require.main.require('async'),
 		fs = require('fs'),
 		path = require('path'),
 		db = require.main.require('./src/database'),
@@ -30,7 +30,7 @@
 					});
 				},
 				documentation: function(next) {
-					fs.readFile(path.join(__dirname, 'v2/readme.md'), {
+					fs.readFile(path.join(__dirname, 'v1/readme.md'), {
 						encoding: 'utf-8'
 					}, function(err, markdown) {
 						next(err, !err ? md.render(markdown) : '');

@@ -1,22 +1,39 @@
 'use strict';
 /* globals module, require */
 
-var passport = require.main.require('passport'),
-	async = require.main.require('async'),
-	jwt = require('jsonwebtoken'),
-	user = require.main.require('./src/user'),
-	groups = require.main.require('./src/groups'),
-	topics = require.main.require('./src/topics'),
-	categories = require.main.require('./src/categories'),
-	errorHandler = require('../../lib/errorHandler'),
+const jwt = require('jsonwebtoken');
+const async = require('async');
 
-	Middleware = {};
+const passport = require.main.require('passport');
+const nconf = require.main.require('nconf');
+
+const user = require.main.require('./src/user');
+const groups = require.main.require('./src/groups');
+
+const plugins = require.main.require('./src/plugins');
+
+const errorHandler = require('../../lib/errorHandler');
+const utils = require('./utils');
+
+const Middleware = {
+	regexes: {
+		tokenRoute: new RegExp('^' + nconf.get('relative_path') + '\\/api\\/v\\d+\\/users\\/(\\d+)\\/tokens$'),
+	}
+};
 
 Middleware.requireUser = function(req, res, next) {
-	var writeApi = require.main.require('nodebb-plugin-write-api');
+	var writeApi = require.main.require('nodebb-plugin-tergar-api');
 	var routeMatch;
 
-	if (req.headers.hasOwnProperty('authorization')) {
+	if (plugins.hasListeners('response:plugin.tergar-api.authenticate')) {
+		plugins.fireHook('response:plugin.tergar-api.authenticate', {
+			req: req,
+			res: res,
+			next: next,
+			utils: utils,
+			errorHandler: errorHandler,
+		});
+	} else if (req.headers.hasOwnProperty('authorization')) {
 		passport.authenticate('bearer', { session: false }, function(err, user) {
 			if (err) { return next(err); }
 			if (!user) { return errorHandler.respond(401, res); }
@@ -37,6 +54,7 @@ Middleware.requireUser = function(req, res, next) {
 
 					req.login(user, function(err) {
 						if (err) { return errorHandler.respond(500, res); }
+
 						req.uid = user.uid;
 						req.loggedIn = req.uid > 0;
 						next();
@@ -80,11 +98,15 @@ Middleware.requireUser = function(req, res, next) {
 				errorHandler.respond(401, res);
 			}
 		});
-	} else if ((routeMatch = req.originalUrl.match(/^\/api\/v\d+\/users\/(\d+)\/tokens$/)) && req.body.hasOwnProperty('password')) {
+	} else if ((routeMatch = req.originalUrl.match(Middleware.regexes.tokenRoute))) {
 		// If token generation route is hit, check password instead
+		if (!utils.checkRequired(['password'], req, res)) {
+			return false;
+		}
+
 		var uid = routeMatch[1];
 
-		user.isPasswordCorrect(uid, req.body.password, function (err, ok) {
+		user.isPasswordCorrect(uid, req.body.password, req.ip, function (err, ok) {
 			if (ok) {
 				req.login({ uid: parseInt(uid, 10) }, function(err) {
 					if (err) { return errorHandler.respond(500, res); }
@@ -98,6 +120,7 @@ Middleware.requireUser = function(req, res, next) {
 			}
 		});
 	} else {
+		// No bearer token, jwt, or special handling instructions, transparently pass-through
 		errorHandler.respond(401, res);
 	}
 };
@@ -175,38 +198,6 @@ Middleware.exposeAdmin = function(req, res, next) {
 		}
 	});
 }
-
-Middleware.validateTid = function(req, res, next) {
-	if (req.params.hasOwnProperty('tid')) {
-		topics.exists(req.params.tid, function(err, exists) {
-			if (err) {
-				errorHandler.respond(500, res);
-			} else if (!exists) {
-				errorHandler.respond(404, res);
-			} else {
-				next();
-			}
-		});
-	} else {
-		errorHandler.respond(404, res);
-	}
-};
-
-Middleware.validateCid = function(req, res, next) {
-	if (req.params.hasOwnProperty('cid')) {
-		categories.exists(req.params.cid, function(err, exists) {
-			if (err) {
-				errorHandler.respond(500, res);
-			} else if (!exists) {
-				errorHandler.respond(404, res);
-			} else {
-				next();
-			}
-		});
-	} else {
-		errorHandler.respond(404, res);
-	}
-};
 
 Middleware.validateGroup = function(req, res, next) {
 	if (res.locals.groupName) {

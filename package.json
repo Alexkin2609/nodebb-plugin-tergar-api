@@ -17,9 +17,19 @@
     "tergar"
   ],
   "author": "Alexkin Skywalker",
+  "contributors": [
+    "Marlon Martínez"
+  ],
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/Alexkin2609/nodebb-plugin-tergar-api/issues"
   },
-  "homepage": "https://github.com/Alexkin2609/nodebb-plugin-tergar-api#readme"
+  "homepage": "https://github.com/Alexkin2609/nodebb-plugin-tergar-api#readme",
+  "dependencies": {
+    "async": "^3.1.1",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "markdown-it": "^10.0.0",
+    "passport-http-bearer": "^1.0.1"
+  }
 }

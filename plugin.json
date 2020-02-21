@@ -1,5 +1,5 @@
 {
-	"id": "nodebb-plugin-write-api",
+	"id": "nodebb-plugin-tergar-api",
 	"name": "NodeBB Write-Enabled API",
 	"description": "A RESTful JSON-speaking API allowing you to write things to NodeBB",
 	"url": "https://github.com/julianlam/nodebb-plugin-write-api",

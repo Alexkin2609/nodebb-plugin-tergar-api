@@ -27,7 +27,7 @@ module.exports = function(middleware) {
 		});
 	});
 
-	app.post('/:slug/membership', apiMiddleware.requireUser, middleware.exposeGroupName, apiMiddleware.validateGroup, function(req, res) {
+	app.put('/:slug/membership', apiMiddleware.requireUser, middleware.exposeGroupName, apiMiddleware.validateGroup, function(req, res) {
 		if (Meta.config.allowPrivateGroups !== '0') {
 			Groups.isPrivate(res.locals.groupName, function(err, isPrivate) {
 				if (isPrivate) {
@@ -47,6 +47,12 @@ module.exports = function(middleware) {
 		}
 	});
 
+	app.put('/:slug/membership/:uid', middleware.exposeGroupName, apiMiddleware.validateGroup, apiMiddleware.requireUser, apiMiddleware.requireAdmin, function(req, res) {
+		Groups.join(res.locals.groupName, req.params.uid, function(err) {
+			errorHandler.handle(err, res);
+		});
+	});
+
 	app.delete('/:slug/membership', apiMiddleware.requireUser, middleware.exposeGroupName, apiMiddleware.validateGroup, function(req, res) {
 		Groups.isMember(req.user.uid, res.locals.groupName, function(err, isMember) {
 			if (isMember) {
@@ -58,6 +64,18 @@ module.exports = function(middleware) {
 			}
 		});
 	});
+
+    app.delete('/:slug/membership/:uid', middleware.exposeGroupName, apiMiddleware.validateGroup, apiMiddleware.requireUser, apiMiddleware.requireAdmin, function(req, res) {
+        Groups.isMember(req.params.uid, res.locals.groupName, function(err, isMember) {
+            if (isMember) {
+                Groups.leave(res.locals.groupName, req.params.uid, function(err) {
+                    errorHandler.handle(err, res);
+                });
+            } else {
+                errorHandler.respond(400, res);
+            }
+        });
+    });
 
 	return app;
 };
