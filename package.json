@@ -1,0 +1,25 @@
+{
+  "name": "nodebb-plugin-tergar-api",
+  "version": "1.0.0",
+  "description": "A plugin for NodeBB that allows to enable some specific API endpoinds for Tergar.",
+  "main": "library.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Alexkin2609/nodebb-plugin-tergar-api.git"
+  },
+  "keywords": [
+    "nodebb",
+    "plgin",
+    "api",
+    "tergar"
+  ],
+  "author": "Alexkin Skywalker",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Alexkin2609/nodebb-plugin-tergar-api/issues"
+  },
+  "homepage": "https://github.com/Alexkin2609/nodebb-plugin-tergar-api#readme"
+}
