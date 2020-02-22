@@ -34,7 +34,7 @@ API.init = function (data, callback) {
 
 API.addMenuItem = function(custom_header, callback) {
 	custom_header.plugins.push({
-		route: '/plugins/write-api',
+		route: '/plugins/tergar-api',
 		icon: 'fa-cogs',
 		name: 'Tergar API'
 	});

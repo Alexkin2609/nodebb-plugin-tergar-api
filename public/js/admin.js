@@ -1,7 +1,7 @@
 'use strict';
 /* globals define, $, socket, ajaxify, app */
 
-define('admin/plugins/write-api', ['settings'], function(Settings) {
+define('admin/plugins/tergar-api', ['settings'], function(Settings) {
 	var Admin = {};
 
 	Admin.init = function() {

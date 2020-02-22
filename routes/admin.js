@@ -68,12 +68,12 @@
 					tokenObj.user = users[tokenObj.uid];
 				}
 
-				res.render('admin/plugins/write-api', data);
+				res.render('admin/plugins/tergar-api', data);
 			});
 		};
 
 	module.exports = function(app, middleware) {
-		app.get('/admin/plugins/write-api', middleware.admin.buildHeader, buildAdminPage);
-		app.get('/api/admin/plugins/write-api', buildAdminPage);
+		app.get('/admin/plugins/tergar-api', middleware.admin.buildHeader, buildAdminPage);
+		app.get('/api/admin/plugins/tergar-api', buildAdminPage);
 	};
 })();
