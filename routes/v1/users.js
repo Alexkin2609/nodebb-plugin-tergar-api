@@ -36,8 +36,11 @@ module.exports = function(/*middleware*/) {
 					return errorHandler.respond(401, res);
 				}
 
-				return errorHandler.handle(err, res, {
-					uid: uid
+				Users.getUsernameByEmail(req.params.email, (err, username) => {
+					return errorHandler.handle(err, res, {
+						uid: uid,
+						username: username
+					});
 				});
 			});
 		});
